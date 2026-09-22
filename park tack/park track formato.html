@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ParkTrack — Panel de operación</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+
+    --bg: #F4F5F7;
+    --surface: #FFFFFF;
+    --surface-2: #ECEEF2;
+    --border: #D7DBE2;
+    --text: #171A21;
+    --text-muted: #666E7D;
+    --amber: #A5740A;
+    --amber-bg: #FDF3D8;
+    --green: #16803D;
+    --green-bg: #E4F5EA;
+    --red: #C0292E;
+    --red-bg: #FBE7E8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14161C;
+      --surface: #1D2129;
+      --surface-2: #262B35;
+      --border: #333A47;
+      --text: #ECEFF4;
+      --text-muted: #8C94A6;
+      --amber: #F2B705;
+      --amber-bg: #3A2F0A;
+      --green: #4ADE80;
+      --green-bg: #123321;
+      --red: #F87171;
+      --red-bg: #3A1518;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14161C;
+    --surface: #1D2129;
+    --surface-2: #262B35;
+    --border: #333A47;
+    --text: #ECEFF4;
+    --text-muted: #8C94A6;
+    --amber: #F2B705;
+    --amber-bg: #3A2F0A;
+    --green: #4ADE80;
+    --green-bg: #123321;
+    --red: #F87171;
+    --red-bg: #3A1518;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 18px clamp(16px, 4vw, 40px);
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand-mark {
+    width: 34px; height: 34px;
+    border-radius: 8px;
+    background: var(--amber);
+    color: #141414;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 17px;
+    flex-shrink: 0;
+  }
+  .brand-text h1 { margin: 0; font-size: 17px; font-weight: 700; letter-spacing: -0.01em; }
+  .brand-text p { margin: 0; font-size: 12.5px; color: var(--text-muted); }
+
+  .signboard {
+    display: flex; align-items: baseline; gap: 8px;
+    padding: 6px 16px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface-2);
+  }
+  .signboard .count { font-family: 'JetBrains Mono', monospace; font-size: 30px; font-weight: 700; line-height: 1; }
+  .signboard .of { font-size: 13px; color: var(--text-muted); }
+  .signboard.full .count { color: var(--red); }
+  .signboard.low .count { color: var(--amber); }
+  .signboard.ok .count { color: var(--green); }
+
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: clamp(16px, 4vw, 32px);
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 760px) {
+    main { grid-template-columns: 1fr; }
+  }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .panel-head {
+    padding: 13px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 0.01em;
+  }
+  .panel-body { padding: 16px; }
+
+  .actions { display: flex; flex-direction: column; gap: 16px; }
+
+  form { display: flex; flex-direction: column; gap: 8px; }
+  label { font-size: 12.5px; color: var(--text-muted); }
+  input {
+    font: inherit;
+    font-family: 'JetBrains Mono', monospace;
+    padding: 10px 11px;
+    border-radius: 7px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text);
+    font-size: 14px;
+    width: 100%;
+  }
+  input:focus-visible { outline: 2px solid var(--amber); outline-offset: 1px; }
+
+  button {
+    font: inherit;
+    font-weight: 600;
+    font-size: 13.5px;
+    padding: 10px 14px;
+    border-radius: 7px;
+    border: 1px solid transparent;
+    cursor: pointer;
+  }
+  button:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+  .btn-enter { background: var(--green); color: #08210F; }
+  .btn-enter:hover { filter: brightness(1.05); }
+  .btn-exit { background: var(--red); color: #2A0708; }
+  .btn-exit:hover { filter: brightness(1.05); }
+  .btn-ghost {
+    background: transparent; color: var(--text-muted);
+    border-color: var(--border); font-size: 12px; padding: 7px 10px;
+  }
+  .btn-ghost:hover { color: var(--text); border-color: var(--text-muted); }
+
+  .hint { font-size: 12px; color: var(--text-muted); margin: 2px 0 0; }
+  .result {
+    font-size: 13px;
+    border-radius: 7px;
+    padding: 10px 11px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    display: none;
+    line-height: 1.5;
+  }
+  .result.show { display: block; }
+  .result.error { border-color: var(--red); background: var(--red-bg); color: var(--red); }
+  .result.ok { border-color: var(--green); background: var(--green-bg); }
+  .result b { font-family: 'JetBrains Mono', monospace; }
+
+  .stats-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+  .stat {
+    flex: 1; min-width: 130px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    background: var(--surface-2);
+  }
+  .stat .num { font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 700; }
+  .stat .lbl { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead th {
+    text-align: left; font-weight: 600; color: var(--text-muted);
+    font-size: 11.5px; padding: 8px 10px; border-bottom: 1px solid var(--border);
+  }
+  tbody td { padding: 9px 10px; border-bottom: 1px solid var(--border); }
+  tbody tr:last-child td { border-bottom: none; }
+  .plate { font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+  .badge {
+    font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px;
+    display: inline-block;
+  }
+  .badge.activo { background: var(--amber-bg); color: var(--amber); }
+  .badge.cerrado { background: var(--green-bg); color: var(--green); }
+  .empty { padding: 28px 16px; text-align: center; color: var(--text-muted); font-size: 13px; }
+  .table-wrap { overflow-x: auto; }
+
+  footer {
+    max-width: 1100px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 32px) 28px;
+    display: flex; justify-content: flex-end;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="brand-mark">P</div>
+    <div class="brand-text">
+      <h1>ParkTrack</h1>
+      <p>Registro y tarifas de estacionamiento</p>
+    </div>
+  </div>
+  <div class="signboard ok" id="signboard">
+    <span class="count mono" id="count">--</span>
+    <span class="of">de <span id="total" class="mono">--</span> espacios libres</span>
+  </div>
+</header>
+
+<main>
+  <div class="actions">
+    <div class="panel">
+      <div class="panel-head">Registrar entrada</div>
+      <div class="panel-body">
+        <form id="form-entrada">
+          <label for="placa-entrada">Placa del vehículo</label>
+          <input id="placa-entrada" class="mono" placeholder="ABC-123" autocomplete="off" required>
+          <button type="submit" class="btn-enter">Registrar entrada</button>
+        </form>
+        <div class="result" id="result-entrada"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">Registrar salida</div>
+      <div class="panel-body">
+        <form id="form-salida">
+          <label for="folio-salida">Folio</label>
+          <input id="folio-salida" class="mono" type="number" min="1" placeholder="0001" autocomplete="off" required>
+          <button type="submit" class="btn-exit">Registrar salida</button>
+        </form>
+        <p class="hint">Tarifa: $<span id="tarifa-hint" class="mono"></span>/hora, por hora o fracción.</p>
+        <div class="result" id="result-salida"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">Disponibilidad y actividad</div>
+    <div class="panel-body">
+      <div class="stats-row">
+        <div class="stat"><div class="num mono" id="stat-ocupados">0</div><div class="lbl">Ocupados ahora</div></div>
+        <div class="stat"><div class="num mono" id="stat-transacciones">0</div><div class="lbl">Transacciones cerradas</div></div>
+        <div class="stat"><div class="num mono" id="stat-ingresos">$0</div><div class="lbl">Ingresos acumulados</div></div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Folio</th><th>Placa</th><th>Entrada</th><th>Salida</th><th>Monto</th><th>Estado</th></tr>
+          </thead>
+          <tbody id="tabla-body"></tbody>
+        </table>
+        <div class="empty" id="tabla-empty" style="display:none;">Aún no hay vehículos registrados.</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <button class="btn-ghost" id="btn-reset" type="button">Reiniciar datos de prueba</button>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var STORAGE_KEY = "parktrack_estado_v1";
+  var CONFIG_DEFAULT = { capacidad_total: 50, tarifa_por_hora: 15 };
+
+  function estadoInicial() {
+    return { config: CONFIG_DEFAULT, transacciones: [], nextFolio: 1 };
+  }
+
+  function cargarEstado() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return estadoInicial();
+      var parsed = JSON.parse(raw);
+      if (!parsed || !parsed.config || !Array.isArray(parsed.transacciones)) return estadoInicial();
+      return parsed;
+    } catch (e) {
+      console.error("No se pudo leer el estado guardado:", e);
+      return estadoInicial();
+    }
+  }
+
+  function guardarEstado(estado) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(estado));
+    } catch (e) {
+      console.error("No se pudo guardar el estado:", e);
+    }
+  }
+
+  var estado = cargarEstado();
+
+  function espaciosDisponibles() {
+    var ocupados = estado.transacciones.filter(function (t) { return t.estado === "activo"; }).length;
+    return estado.config.capacidad_total - ocupados;
+  }
+
+  function calcularTarifa(entradaMs, salidaMs, tarifaPorHora) {
+    var horas = Math.ceil((salidaMs - entradaMs) / 3600000);
+    horas = Math.max(1, horas);
+    return Math.round(horas * tarifaPorHora * 100) / 100;
+  }
+
+  function fmtHora(ms) {
+    var d = new Date(ms);
+    var pad = function (n) { return String(n).padStart(2, "0"); };
+    return pad(d.getDate()) + "/" + pad(d.getMonth() + 1) + " " + pad(d.getHours()) + ":" + pad(d.getMinutes());
+  }
+
+  function registrarEntrada(placaRaw) {
+    var placa = placaRaw.trim().toUpperCase();
+    if (!placa) throw new Error("La placa no puede estar vacía.");
+    if (espaciosDisponibles() <= 0) throw new Error("No hay espacios disponibles.");
+    var folio = estado.nextFolio++;
+    estado.transacciones.push({
+      folio: folio, placa: placa,
+      hora_entrada: Date.now(), hora_salida: null,
+      monto: null, estado: "activo"
+    });
+    guardarEstado(estado);
+    return folio;
+  }
+
+  function registrarSalida(folio) {
+    var t = estado.transacciones.find(function (x) { return x.folio === folio && x.estado === "activo"; });
+    if (!t) throw new Error("Folio " + folio + " no encontrado o ya fue cerrado.");
+    var ahora = Date.now();
+    var monto = calcularTarifa(t.hora_entrada, ahora, estado.config.tarifa_por_hora);
+    t.hora_salida = ahora;
+    t.monto = monto;
+    t.estado = "cerrado";
+    guardarEstado(estado);
+    return t;
+  }
+
+  // ---- Render ----
+
+  function actualizarSignboard() {
+    var disponibles = espaciosDisponibles();
+    var total = estado.config.capacidad_total;
+    document.getElementById("count").textContent = disponibles;
+    document.getElementById("total").textContent = total;
+    var board = document.getElementById("signboard");
+    board.classList.remove("ok", "low", "full");
+    if (disponibles <= 0) board.classList.add("full");
+    else if (disponibles / total <= 0.15) board.classList.add("low");
+    else board.classList.add("ok");
+  }
+
+  function actualizarStats() {
+    var ocupados = estado.transacciones.filter(function (t) { return t.estado === "activo"; }).length;
+    var cerradas = estado.transacciones.filter(function (t) { return t.estado === "cerrado"; });
+    var ingresos = cerradas.reduce(function (s, t) { return s + t.monto; }, 0);
+    document.getElementById("stat-ocupados").textContent = ocupados;
+    document.getElementById("stat-transacciones").textContent = cerradas.length;
+    document.getElementById("stat-ingresos").textContent = "$" + ingresos.toFixed(2);
+  }
+
+  function actualizarTabla() {
+    var body = document.getElementById("tabla-body");
+    var empty = document.getElementById("tabla-empty");
+    var filas = estado.transacciones.slice().sort(function (a, b) { return b.hora_entrada - a.hora_entrada; }).slice(0, 12);
+    body.innerHTML = "";
+    if (filas.length === 0) {
+      empty.style.display = "block";
+      return;
+    }
+    empty.style.display = "none";
+    filas.forEach(function (t) {
+      var tr = document.createElement("tr");
+      tr.innerHTML =
+        '<td class="mono">' + String(t.folio).padStart(4, "0") + '</td>' +
+        '<td class="plate">' + t.placa + '</td>' +
+        '<td class="mono">' + fmtHora(t.hora_entrada) + '</td>' +
+        '<td class="mono">' + (t.hora_salida ? fmtHora(t.hora_salida) : '—') + '</td>' +
+        '<td class="mono">' + (t.monto != null ? "$" + t.monto.toFixed(2) : '—') + '</td>' +
+        '<td><span class="badge ' + t.estado + '">' + t.estado + '</span></td>';
+      body.appendChild(tr);
+    });
+  }
+
+  function render() {
+    actualizarSignboard();
+    actualizarStats();
+    actualizarTabla();
+    document.getElementById("tarifa-hint").textContent = estado.config.tarifa_por_hora.toFixed(2);
+  }
+
+  function mostrarResultado(el, mensaje, tipo) {
+    el.textContent = mensaje;
+    el.className = "result show " + tipo;
+  }
+
+  // ---- Eventos ----
+
+  document.getElementById("form-entrada").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var input = document.getElementById("placa-entrada");
+    var box = document.getElementById("result-entrada");
+    try {
+      var folio = registrarEntrada(input.value);
+      mostrarResultado(box, "Entrada registrada — folio " + String(folio).padStart(4, "0") + ", placa " + input.value.trim().toUpperCase() + ".", "ok");
+      input.value = "";
+      render();
+    } catch (err) {
+      mostrarResultado(box, err.message, "error");
+    }
+  });
+
+  document.getElementById("form-salida").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var input = document.getElementById("folio-salida");
+    var box = document.getElementById("result-salida");
+    try {
+      var folio = parseInt(input.value, 10);
+      var t = registrarSalida(folio);
+      var horas = Math.ceil((t.hora_salida - t.hora_entrada) / 3600000);
+      mostrarResultado(box, "Placa " + t.placa + " — " + horas + "h cobrada(s) — monto: $" + t.monto.toFixed(2) + ".", "ok");
+      input.value = "";
+      render();
+    } catch (err) {
+      mostrarResultado(box, err.message, "error");
+    }
+  });
+
+  document.getElementById("btn-reset").addEventListener("click", function () {
+    if (!confirm("Esto borra todos los registros de esta demo. ¿Continuar?")) return;
+    estado = estadoInicial();
+    guardarEstado(estado);
+    document.getElementById("result-entrada").className = "result";
+    document.getElementById("result-salida").className = "result";
+    render();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
